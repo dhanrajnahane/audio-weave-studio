@@ -7,7 +7,6 @@ export type WorkspaceView = 'timeline' | 'remix' | 'routing' | 'mixer' | 'analyz
 interface TopNavProps {
   backendStatus: BackendStatus;
   isImporting: boolean;
-  isSeparating?: boolean;
   activeView: WorkspaceView;
   projectName: string;
   onViewChange: (view: WorkspaceView) => void;
@@ -15,13 +14,11 @@ interface TopNavProps {
   onOpenExport: () => void;
   onFileSelected: (file: File) => void;
   onError: (msg: string) => void;
-  onRetryConnection?: () => void;
 }
 
 export const TopNav: React.FC<TopNavProps> = ({
   backendStatus,
   isImporting,
-  isSeparating,
   activeView,
   projectName,
   onViewChange,
@@ -29,7 +26,6 @@ export const TopNav: React.FC<TopNavProps> = ({
   onOpenExport,
   onFileSelected,
   onError,
-  onRetryConnection,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -171,39 +167,15 @@ export const TopNav: React.FC<TopNavProps> = ({
 
         <div className="flex items-center space-x-2 bg-studio-850 px-3 py-1.5 rounded-lg border border-studio-700/60 font-mono text-xs">
           <Activity className="w-3.5 h-3.5 text-zinc-400" />
-          {backendStatus.connectionState === 'processing' || isImporting || isSeparating ? (
-            <div className="flex items-center space-x-1.5 text-blue-400 text-xs font-medium">
-              <span className="w-2 h-2 rounded-full bg-blue-400 animate-ping"></span>
-              <span>Processing...</span>
-            </div>
-          ) : backendStatus.connectionState === 'connected' ? (
+          {backendStatus.connected ? (
             <div className="flex items-center space-x-1.5 text-emerald-400 text-xs font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-              <span>Connected (FastAPI · {backendStatus.device ? backendStatus.device.toUpperCase() : 'CPU'})</span>
-            </div>
-          ) : backendStatus.connectionState === 'connecting' ? (
-            <div className="flex items-center space-x-1.5 text-cyan-400 text-xs font-medium">
-              <span className="w-2 h-2 rounded-full bg-cyan-400 animate-ping"></span>
-              <span>Connecting...</span>
-            </div>
-          ) : backendStatus.connectionState === 'reconnecting' ? (
-            <div className="flex items-center space-x-1.5 text-amber-400 text-xs font-medium">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-              <span>Reconnecting ({backendStatus.retryCount || 1}/5)...</span>
+              <span>FastAPI CPU</span>
             </div>
           ) : (
             <div className="flex items-center space-x-1.5 text-red-400 text-xs font-medium">
               <span className="w-2 h-2 rounded-full bg-red-500"></span>
               <span>Disconnected</span>
-              {onRetryConnection && (
-                <button
-                  onClick={onRetryConnection}
-                  className="ml-1 px-1.5 py-0.5 text-[10px] bg-red-950/80 hover:bg-red-900 border border-red-500/40 rounded text-red-300 font-sans transition"
-                  title="Retry Backend Connection"
-                >
-                  Retry
-                </button>
-              )}
             </div>
           )}
         </div>

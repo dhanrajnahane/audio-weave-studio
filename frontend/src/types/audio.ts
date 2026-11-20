@@ -32,61 +32,11 @@ export interface AudioAsset {
   rawArrayBuffer?: ArrayBuffer; // Optional in-memory or IndexedDB cached raw bytes
 }
 
-export type ConnectionState = 'connected' | 'connecting' | 'reconnecting' | 'disconnected' | 'processing';
-
-export interface StemInfo {
-  stem: string;
-  filename: string;
-  stream_url: string;
-  metadata: {
-    duration_seconds: number;
-    sample_rate: number;
-    channels: number;
-  };
-}
-
-export interface StemSetInfo {
-  id: string;
-  name: string;
-  relative_path: string;
-  stems: {
-    [key: string]: StemInfo;
-  };
-}
-
-export interface UploadResponse {
-  id: string;
-  filename: string;
-  stored_filename: string;
-  file_path: string;
-  stream_url: string;
-  metadata: AudioMetadata;
-  peaks: [number, number][];
-  rms: number[];
-  max_peak: number;
-}
-
 export interface BackendStatus {
-  connectionState: ConnectionState;
   connected: boolean;
   status: string;
   device: string;
   supportedFormats: string[];
-  retryCount?: number;
-  lastChecked?: number;
-  errorMessage?: string;
-}
-
-export interface SeparationJob {
-  job_id: string;
-  stored_filename: string;
-  status: 'queued' | 'processing' | 'completed' | 'error';
-  progress: number;
-  stage: string;
-  result?: any;
-  error?: string;
-  created_at?: number;
-  updated_at?: number;
 }
 
 export interface SongSectionAnalysis {

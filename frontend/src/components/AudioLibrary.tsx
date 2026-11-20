@@ -1,6 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React from 'react';
 import { AudioAsset } from '../types/audio';
-import { Music, Trash2, Clock, HardDrive, Disc, Check, Radio, Search, Filter, X } from 'lucide-react';
+import { Music, Trash2, Clock, HardDrive, Disc, Check, Radio } from 'lucide-react';
 
 interface AudioLibraryProps {
   assets: AudioAsset[];
@@ -10,8 +10,6 @@ interface AudioLibraryProps {
   isImporting: boolean;
 }
 
-type FormatFilter = 'ALL' | 'WAV' | 'MP3' | 'FLAC';
-
 export const AudioLibrary: React.FC<AudioLibraryProps> = ({
   assets,
   selectedAssetId,
@@ -19,30 +17,6 @@ export const AudioLibrary: React.FC<AudioLibraryProps> = ({
   onDeleteAsset,
   isImporting,
 }) => {
-  const [searchQuery, setSearchQuery] = useState<string>('');
-  const [formatFilter, setFormatFilter] = useState<FormatFilter>('ALL');
-
-  const filteredAssets = useMemo(() => {
-    return assets.filter((asset) => {
-      // 1. Search Query Filter
-      const q = searchQuery.toLowerCase().trim();
-      const matchesSearch =
-        q === '' ||
-        asset.filename.toLowerCase().includes(q) ||
-        asset.metadata.format.toLowerCase().includes(q) ||
-        asset.metadata.channel_type.toLowerCase().includes(q);
-
-      // 2. Format Badge Filter
-      const fmt = asset.metadata.format.toUpperCase();
-      let matchesFormat = true;
-      if (formatFilter === 'WAV') matchesFormat = fmt.includes('WAV');
-      else if (formatFilter === 'MP3') matchesFormat = fmt.includes('MP3') || fmt.includes('MPEG');
-      else if (formatFilter === 'FLAC') matchesFormat = fmt.includes('FLAC');
-
-      return matchesSearch && matchesFormat;
-    });
-  }, [assets, searchQuery, formatFilter]);
-
   const getFormatBadgeColor = (format: string) => {
     const f = format.toLowerCase();
     if (f.includes('wav')) return 'bg-blue-500/15 text-blue-400 border-blue-500/30';
@@ -60,48 +34,8 @@ export const AudioLibrary: React.FC<AudioLibraryProps> = ({
           <h2 className="text-xs font-bold text-zinc-200 tracking-wide">Audio Library</h2>
         </div>
         <span className="text-[10px] font-mono text-zinc-400 bg-studio-800 px-1.5 py-0.5 rounded border border-studio-700">
-          {filteredAssets.length} / {assets.length} {assets.length === 1 ? 'Track' : 'Tracks'}
+          {assets.length} {assets.length === 1 ? 'Track' : 'Tracks'}
         </span>
-      </div>
-
-      {/* Search Input & Format Filter Bar */}
-      <div className="p-2.5 border-b border-studio-700/50 bg-studio-850/80 space-y-2 shrink-0">
-        <div className="relative flex items-center">
-          <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search library tracks..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-studio-900 border border-studio-700/60 rounded-lg pl-8 pr-7 py-1 text-xs text-zinc-100 placeholder-zinc-500 outline-none focus:border-blue-500 transition font-sans"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2 text-zinc-400 hover:text-zinc-200"
-              title="Clear search"
-            >
-              <X className="w-3 h-3" />
-            </button>
-          )}
-        </div>
-
-        {/* Format Filter Badges */}
-        <div className="flex items-center gap-1 text-[10px] font-mono font-bold">
-          {(['ALL', 'WAV', 'MP3', 'FLAC'] as const).map((fmt) => (
-            <button
-              key={fmt}
-              onClick={() => setFormatFilter(fmt)}
-              className={`flex-1 py-0.5 rounded transition ${
-                formatFilter === fmt
-                  ? 'bg-blue-600 text-white shadow-sm'
-                  : 'bg-studio-800 text-zinc-400 hover:bg-studio-750 hover:text-zinc-200'
-              }`}
-            >
-              {fmt}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Asset List Container */}
@@ -130,19 +64,8 @@ export const AudioLibrary: React.FC<AudioLibraryProps> = ({
           </div>
         )}
 
-        {/* Filtered Empty State */}
-        {assets.length > 0 && filteredAssets.length === 0 && (
-          <div className="h-48 flex flex-col items-center justify-center text-center p-4 text-zinc-500 border border-dashed border-studio-700/60 rounded-xl my-2">
-            <Filter className="w-6 h-6 mb-2 text-zinc-600" />
-            <p className="text-xs font-medium text-zinc-400 mb-0.5">No matching tracks</p>
-            <p className="text-[10px] text-zinc-500">
-              Try adjusting your search query or format filter.
-            </p>
-          </div>
-        )}
-
         {/* Asset Cards */}
-        {filteredAssets.map((asset) => {
+        {assets.map((asset) => {
           const isSelected = asset.id === selectedAssetId;
           const formatBadge = getFormatBadgeColor(asset.metadata.format);
 

@@ -3,7 +3,6 @@ import { RemixComposerModel } from '../remix/RemixComposerModel';
 import { AudioClip } from '../timeline/types';
 import { effectsManager } from '../effects/EffectsManager';
 import { EffectsRack } from '../effects/EffectsRack';
-import { convertWavToMp3 as convertWavToMp3Api } from '../../api/apiClient';
 
 export type ExportTarget = 'full_mix' | 'stems' | 'selected_track' | 'selected_region' | 'arrangement';
 export type ExportFormat = 'wav' | 'mp3';
@@ -474,8 +473,20 @@ export class AudioExportEngine {
   /**
    * Sends rendered WAV blob to backend for high-quality MP3 encoding via FFmpeg.
    */
-  static async convertWavToMp3(wavBlob: Blob, bitrate: '128k' | '192k' | '256k' | '320k' = '320k'): Promise<Blob> {
-    return await convertWavToMp3Api(wavBlob, bitrate);
+  static async convertWavToMp3(wavBlob: Blob, bitrate: string = '320k'): Promise<Blob> {
+    const formData = new FormData();
+    formData.append('file', wavBlob, 'temp_render.wav');
+
+    const res = await fetch(`/api/audio/export/mp3?bitrate=${bitrate}`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!res.ok) {
+      throw new Error(`MP3 conversion server error: ${res.statusText}`);
+    }
+
+    return res.blob();
   }
 
   /**

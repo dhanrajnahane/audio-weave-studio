@@ -84,6 +84,27 @@ export const TimelineWorkspace: React.FC<TimelineWorkspaceProps> = ({
     return () => unsub();
   }, [refreshFromModel]);
 
+  // When activeAsset changes, register it in timeline model and create clip if timeline empty
+  useEffect(() => {
+    if (activeAsset) {
+      // Create a clip on primary track (vocals) if timeline is completely empty
+      if (timelineModel.getAllClips().length === 0) {
+        timelineModel.addClip(
+          {
+            id: `clip-${activeAsset.id}`,
+            trackId: 'vocals',
+            assetId: activeAsset.id,
+            name: activeAsset.filename,
+            startOffset: 0,
+            duration: activeAsset.metadata.duration_seconds || duration,
+            sourceOffset: 0,
+            color: '#06b6d4',
+          },
+          false
+        );
+      }
+    }
+  }, [activeAsset, duration]);
 
   // Draw Time Ruler
   const drawRuler = useCallback(() => {

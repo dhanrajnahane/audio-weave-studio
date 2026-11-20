@@ -84,19 +84,7 @@ export class TimelineModel {
   }
 
   getAsset(assetId: string): AudioBuffer | undefined {
-    if (this.assetsMap.has(assetId)) {
-      return this.assetsMap.get(assetId);
-    }
-    const normalized = normalizeTrackId(assetId);
-    if (this.assetsMap.has(normalized)) {
-      return this.assetsMap.get(normalized);
-    }
-    for (const [key, buf] of this.assetsMap.entries()) {
-      if (key.includes(normalized) || normalized.includes(key)) {
-        return buf;
-      }
-    }
-    return undefined;
+    return this.assetsMap.get(assetId);
   }
 
   hasAsset(assetId: string): boolean {

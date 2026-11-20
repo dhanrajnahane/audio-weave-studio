@@ -27,7 +27,6 @@ import { MusicalSection, MusicalSectionType, RemixArrangement, ArrangementBlock 
 import { timelineModel } from '../audio/timeline/TimelineModel';
 import { audioEngine } from '../audio/AudioEngine';
 import { AudioAsset } from '../types/audio';
-import { analyzeAudioFile } from '../api/apiClient';
 
 interface RemixComposerProps {
   activeAsset: AudioAsset | null;
@@ -56,27 +55,6 @@ export const RemixComposer: React.FC<RemixComposerProps> = ({
   const [isLoadingAnalysis, setIsLoadingAnalysis] = useState<boolean>(false);
   const [newArrangementName, setNewArrangementName] = useState<string>('');
   const [showNewModal, setShowNewModal] = useState<boolean>(false);
-  const [stemVolumes, setStemVolumes] = useState<{ [stem: string]: number }>({
-    vocals: 1.0,
-    drums: 1.0,
-    bass: 1.0,
-    other: 1.0,
-  });
-
-  // Track stem volumes from AudioEngine
-  useEffect(() => {
-    const updateVols = () => {
-      const states = audioEngine.getTrackStates();
-      const vols: { [key: string]: number } = {};
-      for (const t of states) {
-        vols[t.id] = t.volume;
-      }
-      setStemVolumes((prev) => ({ ...prev, ...vols }));
-    };
-    updateVols();
-    const unsub = audioEngine.onTrackStatesChange(updateVols);
-    return () => unsub();
-  }, []);
 
   // Sync state from model
   const refreshModel = useCallback(() => {
@@ -106,8 +84,11 @@ export const RemixComposer: React.FC<RemixComposerProps> = ({
       setIsLoadingAnalysis(true);
 
       try {
-        const data = await analyzeAudioFile(activeAsset.stored_filename, force);
-        if (data.sections && data.sections.length > 0) {
+        const url = `/api/audio/analyze/${encodeURIComponent(activeAsset.stored_filename)}?force=${force}`;
+        const res = await fetch(url);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.sections && data.sections.length > 0) {
             const normalizeType = (label: string): MusicalSectionType => {
               const l = label.toLowerCase();
               if (l.includes('intro')) return 'intro';
@@ -175,6 +156,7 @@ export const RemixComposer: React.FC<RemixComposerProps> = ({
             );
             return;
           }
+        }
       } catch {
         // Fallback to local audio buffer
       } finally {
@@ -833,51 +815,6 @@ export const RemixComposer: React.FC<RemixComposerProps> = ({
                   <span>Remove</span>
                 </button>
               </div>
-            </div>
-
-            {/* Stem Volume & Balance Strip */}
-            <div className="pt-2 border-t border-[#1f2637] flex flex-wrap items-center gap-4 text-xs font-mono">
-              <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider flex items-center gap-1">
-                <SlidersHorizontal className="w-3 h-3 text-cyan-400" />
-                Stem Volumes:
-              </span>
-              {(['vocals', 'drums', 'bass', 'other'] as const).map((stemKey) => {
-                const vol = stemVolumes[stemKey] ?? 1.0;
-                const color =
-                  stemKey === 'vocals'
-                    ? 'text-cyan-400 accent-cyan-400'
-                    : stemKey === 'drums'
-                    ? 'text-amber-400 accent-amber-400'
-                    : stemKey === 'bass'
-                    ? 'text-purple-400 accent-purple-400'
-                    : 'text-emerald-400 accent-emerald-400';
-                return (
-                  <div
-                    key={stemKey}
-                    className="flex items-center gap-1.5 bg-[#0b0e15] px-2.5 py-1 rounded border border-[#1b2230]"
-                  >
-                    <span className={`text-[10px] uppercase font-bold ${color.split(' ')[0]}`}>
-                      {stemKey}:
-                    </span>
-                    <input
-                      type="range"
-                      min={0}
-                      max={1.5}
-                      step={0.01}
-                      value={vol}
-                      onChange={(e) => {
-                        const newVol = parseFloat(e.target.value);
-                        audioEngine.setTrackVolume(stemKey, newVol);
-                        setStemVolumes((prev) => ({ ...prev, [stemKey]: newVol }));
-                      }}
-                      className={`w-16 h-1.5 rounded cursor-pointer ${color.split(' ')[1]}`}
-                    />
-                    <span className="text-[9px] text-zinc-400 w-7 text-right">
-                      {Math.round(vol * 100)}%
-                    </span>
-                  </div>
-                );
-              })}
             </div>
           </div>
         )}

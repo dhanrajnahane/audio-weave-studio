@@ -420,17 +420,11 @@ export class AudioEngine {
     const schedule = this.timelineModelRef.getScheduleForTime(this.startOffset);
 
     for (const item of schedule) {
-      const trackId = normalizeTrackId(item.trackId);
-      const track = this.ensureTrackNodes(trackId);
-      let buffer = this.timelineModelRef.getAsset(item.clip.assetId);
-      if (!buffer && track.buffer) {
-        buffer = track.buffer;
-      }
-      if (!buffer) {
-        buffer = this.timelineModelRef.getAsset(trackId);
-      }
+      const buffer = this.timelineModelRef.getAsset(item.clip.assetId);
       if (!buffer) continue;
 
+      const trackId = normalizeTrackId(item.trackId);
+      const track = this.ensureTrackNodes(trackId);
       const source = ctx.createBufferSource();
       source.buffer = buffer;
       source.connect(track.gainNode);

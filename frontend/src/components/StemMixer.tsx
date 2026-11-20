@@ -6,16 +6,9 @@ import { timelineModel } from '../audio/timeline/TimelineModel';
 interface StemMixerProps {
   onSeparateRequest?: () => void;
   isSeparating?: boolean;
-  separationProgress?: number;
-  separationStage?: string;
 }
 
-export const StemMixer: React.FC<StemMixerProps> = ({
-  onSeparateRequest,
-  isSeparating,
-  separationProgress = 0,
-  separationStage = '',
-}) => {
+export const StemMixer: React.FC<StemMixerProps> = ({ onSeparateRequest, isSeparating }) => {
   const [tracks, setTracks] = useState<TrackInfo[]>([]);
   const [masterVolume, setMasterVolume] = useState<number>(1.0);
   const [masterMuted, setMasterMuted] = useState<boolean>(false);
@@ -135,47 +128,32 @@ export const StemMixer: React.FC<StemMixerProps> = ({
         </div>
 
         {onSeparateRequest && (
-          <div className="flex flex-col items-end gap-1">
-            <button
-              onClick={onSeparateRequest}
-              disabled={isSeparating}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
-                isSeparating
-                  ? 'bg-[#1b2233] text-gray-300 border border-cyan-500/40 cursor-wait shadow-sm'
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-600/30 border border-blue-400/30'
-              }`}
-            >
-              {isSeparating ? (
-                <>
-                  <svg className="w-3.5 h-3.5 animate-spin text-cyan-400" viewBox="0 0 24 24" fill="none">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
-                  <span>{separationStage || 'Separating Stems with Demucs...'}</span>
-                  {separationProgress > 0 && (
-                    <span className="font-mono text-cyan-300 font-bold ml-1 px-1.5 py-0.2 bg-cyan-950/60 rounded border border-cyan-500/30">
-                      {separationProgress}%
-                    </span>
-                  )}
-                </>
-              ) : (
-                <>
-                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
-                  </svg>
-                  Run AI Stem Separation
-                </>
-              )}
-            </button>
-            {isSeparating && (
-              <div className="w-full bg-[#1e2638] h-1.5 rounded-full overflow-hidden border border-[#2b354b]">
-                <div
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 h-full transition-all duration-300 rounded-full"
-                  style={{ width: `${Math.max(5, Math.min(100, separationProgress))}%` }}
-                />
-              </div>
+          <button
+            onClick={onSeparateRequest}
+            disabled={isSeparating}
+            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-2 transition-all ${
+              isSeparating
+                ? 'bg-[#1b2233] text-gray-400 border border-[#2d374e] cursor-not-allowed'
+                : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-600/30 border border-blue-400/30'
+            }`}
+          >
+            {isSeparating ? (
+              <>
+                <svg className="w-3.5 h-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                </svg>
+                Separating Stems with Demucs...
+              </>
+            ) : (
+              <>
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" />
+                </svg>
+                Run AI Stem Separation
+              </>
             )}
-          </div>
+          </button>
         )}
       </div>
 

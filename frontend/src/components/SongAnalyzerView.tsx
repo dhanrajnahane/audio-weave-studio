@@ -18,7 +18,6 @@ import { AudioAsset, SongAnalysisResult, SongSectionAnalysis } from '../types/au
 import { remixComposerModel } from '../audio/remix/RemixComposerModel';
 import { projectManager } from '../audio/project/ProjectManager';
 import { MusicalSection, MusicalSectionType } from '../audio/remix/types';
-import { analyzeAudioFile } from '../api/apiClient';
 
 interface SongAnalyzerViewProps {
   activeAsset: AudioAsset | null;
@@ -41,7 +40,14 @@ export const SongAnalyzerView: React.FC<SongAnalyzerViewProps> = ({
 
       setIsLoading(true);
       try {
-        const data = await analyzeAudioFile(activeAsset.stored_filename, force);
+        const url = `/api/audio/analyze/${encodeURIComponent(activeAsset.stored_filename)}?force=${force}`;
+        const res = await fetch(url);
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.detail || 'Analysis request failed on backend.');
+        }
+
+        const data: SongAnalysisResult = await res.json();
         setAnalysis(data);
         projectManager.setAnalysisResult(data);
         if (data.sections && data.sections.length > 0) {
