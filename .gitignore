@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Production build artifacts
+dist/
+build/
+*.local
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+aw_env/
+ENV/
+.venv/
+
+# Testing caches
+.pytest_cache/
+coverage/
+
+# Local / Backup folders
+backup_pre_fix/
+frontend/backend/
+frontend/temp_test.wav
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Audio storage (prevent committing massive audio WAV/MP3 files to Git)
+storage/uploads/*
+!storage/uploads/.gitkeep
+storage/stems/*
+!storage/stems/.gitkeep
+storage/analysis/*
+!storage/analysis/.gitkeep
+
+# System files
+.DS_Store
+Thumbs.db
+*.log
